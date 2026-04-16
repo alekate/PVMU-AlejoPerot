@@ -1,7 +1,8 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
+using UnityEngine;
 
 public class TcpConnectedClient
 {
@@ -26,15 +27,19 @@ public class TcpConnectedClient
 
     private void OnRead (IAsyncResult asyncResult)
     {
-        if (NetworkStream.EndRead(asyncResult) == 0)
+        int bytesRead = NetworkStream.EndRead(asyncResult);
+
+        if (bytesRead == 0)
         {
             TcpManager.Instance.DisconnectClient(this);
             return;
         }
 
-        lock (readBuffer)
+        byte[] data = new byte[bytesRead];
+        Array.Copy(readBuffer, data, bytesRead);
+
+        lock (readHandler)
         {
-            byte[] data = readBuffer.TakeWhile(b => (char)b != '\0').ToArray();
             dataReceived.Enqueue(data);
         }
 
@@ -42,9 +47,9 @@ public class TcpConnectedClient
         NetworkStream.BeginRead(readBuffer, 0, readBuffer.Length, OnRead, null);
     }
 
-    public void SendData (byte[] data)
+    public void SendData(byte[] data)
     {
-        NetworkStream.Write(data, 0 , data.Length);
+        NetworkStream.Write(data, 0, data.Length);
     }
 
     public void FlushRecievedData()

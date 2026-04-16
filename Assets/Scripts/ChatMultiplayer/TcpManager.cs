@@ -103,13 +103,13 @@ public class TcpManager : MonoBehaviourSingleton<TcpManager>
 
     public void BroadcastData(byte[] data)
     {
-        foreach (TcpConnectedClient client in serverClients)
-        {
+        foreach (var client in serverClients)
+        { 
             client.SendData(data);
         }
     }
 
-    public void SendDataToServer (byte[] data)
+    public void SendDataToServer(byte[] data)
     {
         connectedClient.SendData(data);
     }
